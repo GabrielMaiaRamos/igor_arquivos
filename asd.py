@@ -2,6 +2,8 @@ import time
 import random
 import datetime
 import numpy as np
+# cores = {"padrao": "\033[m", "cinza": "\033[90m", "preto": "\033[7;30;m"}
+
 
 nomes = ["Lucas", "Ana", "Pedro", "Julia", "Gabriel", "Maria", "Joao", "Larissa", "Felipe", "Camila", 
         "Rafael", "Beatriz", "Bruno", "Carolina", "Daniel",
@@ -35,7 +37,7 @@ def gerar_dados():
     idade = 2025-int(ano_ani)
 
     #se o mes do dia_atual for igual ao mes do aniversaio da pessoa, o acesso é gratuioto, se nao, 39.90 por pessoa
-    gasto = "Gratuito" if int(mes_entrada) == int(mes_ani) else round((len(dependentes.split())+1)*39.90, 2)
+    gasto = "Gratuito" if int(mes_entrada) == int(mes_ani) else str(round((len(dependentes.split())+1)*39.90, 2))+"0"
 
     #escolhe um ID dentro dos numeros unicos
     cracha = random.choice(numeros)
@@ -50,7 +52,7 @@ def gerar_arquivo(nome_arquivo, linhas):
     #comeca a contar o tempo
     inicio = time.time()
     #abre ou cria o arquivo
-    with open(nome_arquivo, "w", encoding="utf-8") as arquivo:   #Gabriel;18;20
+    with open(nome_arquivo, "w", encoding="utf-8") as arquivo:   
         #adiciona o cabecalho uma unica vez
         arquivo.write(";".join(cabecalho) + "\n")
         #escreve o resto das liinhas
@@ -68,61 +70,13 @@ gerar_arquivo("medio.csv", 1000)
 gerar_arquivo("grande.csv", 10000)
 gerar_arquivo("gigante.csv", 100000)
 
-def coletardados():
-    #indicar nome
-    nome = str(input("Digite seu nome: ").strip().lower())
-    #indicar idade
-    while True:
-        try:
-            idade = int(input("Digite sua idade: "))
-            break
-        except ValueError:
-            print("Digite apenas sua idade com números!")
-    #indicar data de aniversario
-    while True:
-        aniversario = input("Digite sua data de nascimento (dd/mm/aaaa): ")
-        try:
-            dataniver = datetime.datetime.strptime(aniversario, "%d/%m/%Y").date()
-            dataniver = dataniver.strftime("%d/%m/%Y")
-            break
-        except ValueError:
-            print("Formato inválido. O correto é dd/mm/aaaa.")
-    #gerar data de entrada (dia atual)
-    dia_entrada = datetime.datetime.now().strftime("%d/%m/%Y")
-    #indicar quais sao os dependentes
-    while True:
-        try:
-            pergunta = str(input("Você está acompanhado(a) de algum não pagante?\nResponda com Sim ou Não: ").strip().lower())
-            resposta = pergunta.split()[0]
-            lista_acompanhantes = []
-            if resposta in ["s", "sim"]:
-                numero = int(input("Quantos dependentes estão com você? "))
-                for a in range(numero):
-                    nomedep = str(input("Digite o nome do(a) dependente: "))
-                    lista_acompanhantes.append(nomedep)
-            if resposta in ["n", "nao", "não"]:
-                pass
-            break
-        except:
-            print("Resposta inválida. Entre com Sim ou Não.")
-    #a partir da lista de acompanhantes, formata ["A", "B"] para "A, B" Caso a lista seja vazia, recebe "Nenhum"
-    if not lista_acompanhantes:
-        dependentes = "Nenhum"
-    else:
-        dependentes = ", ".join(lista_acompanhantes)
-    #gera os gastos a partir da quantidade de pessoas
-    gastos = round((len(dependentes.split())+1)*39.90, 2)
-    #gera um ID aleatorio
-    cracha = random.choice(numeros)
-
-    return [nome, idade, dia_entrada, dataniver, dependentes, gastos, cracha]
-
 class Gerenciador_Matriz:
     #caracteristicas de cada matriz
     def __init__(self, nome_arquivo):
         self.arquivo = nome_arquivo
         self.matriz = []
         self.cabecalho = []
+        self.tamanho = int
         self.carregar_matriz()
 #=========================================================================================================#
     #carregar as linhas da matriz
@@ -137,6 +91,7 @@ class Gerenciador_Matriz:
                 for linha_atual in linhas[1:]:
                     dados = linha_atual.split(";")
                     self.matriz.append(dados)
+                self.tamanho = len(self.matriz)
         except FileNotFoundError:
             print(f"Arquivo {self.arquivo} não encontrado!\nCertifique-se de colocar o nome correto!")
 
@@ -146,7 +101,114 @@ class Gerenciador_Matriz:
     def mostrar_matriz(self):
         for linha in self.matriz:
             print(linha)
+#=========================================================================================================#
+    def buscar_cliente(self):
+        try:
+            conteudo = int(input("\n==Conteúdo da Busca==\n[1] Dados Completos\n[2] Apenas Nome, ID e Gasto" \
+            "\nSelecione o conteúdo de busca que deseja: "))
+            metodo = int(input("\n==Método da Busca==\n[3] Por Nome\n[4] Por ID" \
+            "\nSelecione o método de busca que deseja: "))
+            if metodo == 3:
+                nome = input("Por favor, digite a o nome: ")
+                for c in range(self.tamanho):
+                    if self.matriz[c][0] == nome:
+                        linha = c
+                        break
+                if conteudo == 1:
+                    print(f"Dados Cadastrados:\n{self.matriz[linha]}")
+                elif conteudo == 2:
+                    print(f"Cliente: {self.matriz[linha][0]}\nID do Cliente: {self.matriz[linha][6]}\nGasto do Cliente: {self.matriz[linha][5]}")
+            elif metodo == 4:
+                cracha = int(input("Por favor, digite o ID do cliente: "))
+                for c in range(self.tamanho):
+                    if self.matriz[c][6] == str(cracha):
+                        linha = c
+                        break
+                if conteudo == 1:
+                    print(f"Dados Cadastrados:\n{self.matriz[linha]}")
+                elif conteudo == 2:
+                    print(f"Cliente: {self.matriz[linha][0]}\nID do Cliente: {self.matriz[linha][6]}\nGasto do Cliente: {self.matriz[linha][5]}")
+        except ValueError:
+            print("Erro, repita a operação com dados disponíveis")
+#=========================================================================================================#
+    def coletardados(self):
+        #indicar nome
+        nome = str(input("Digite seu nome: ").strip())
+        #indicar idade
+        while True:
+            try:
+                idade = int(input("Digite sua idade: "))
+                break
+            except ValueError:
+                print("Digite apenas sua idade com números!")
+        #indicar data de aniversario
+        while True:
+            aniversario = input("Digite sua data de nascimento (dd/mm/aaaa): ")
+            try:
+                dataniver = datetime.datetime.strptime(aniversario, "%d/%m/%Y").date()
+                dataniver = dataniver.strftime("%d/%m/%Y")
+                break
+            except ValueError:
+                print("Formato inválido. O correto é dd/mm/aaaa.")
+        #gerar data de entrada (dia atual)
+        dia_entrada = datetime.datetime.now().strftime("%d/%m/%Y")
+        #indicar quais sao os dependentes
+        while True:
+            try:
+                pergunta = str(input("Você está acompanhado(a) de algum não pagante?\nResponda com Sim ou Não: ").strip().lower())
+                resposta = pergunta.split()[0]
+                lista_acompanhantes = []
+                if resposta in ["s", "sim"]:
+                    numero = int(input("Quantos dependentes estão com você? "))
+                    for a in range(numero):
+                        nomedep = str(input("Digite o nome do(a) dependente: "))
+                        lista_acompanhantes.append(nomedep)
+                elif resposta in ["n", "nao", "não"]:
+                    pass
+                else:
+                    raise ValueError
+                break
+            except (ValueError, IndexError):
+                print("Resposta Inválida!")
 
+        #a partir da lista de acompanhantes, formata ["A", "B"] para "A, B" Caso a lista seja vazia, recebe "Nenhum"
+        if not lista_acompanhantes:
+            dependentes = "Nenhum"
+        else:
+            dependentes = ", ".join(lista_acompanhantes)
+        #gera os gastos a partir da quantidade de pessoas
+        gastos = "Gratuito" if int(dia_entrada[3:5]) == int(dataniver[3:5]) else str(round((len(dependentes.split())+1)*39.90, 2))+"0"
+        #gera um ID aleatorio
+        cracha = random.choice(numeros)
+
+        return [nome, str(idade), dia_entrada, dataniver, dependentes, gastos, str(int(cracha))]
+#=========================================================================================================#
+    def adicionar_cliente(self):
+        cliente = self.coletardados()
+        if len(cliente) == 7:
+            self.matriz.append(cliente)
+#=========================================================================================================#
+    def remover_cliente(self):
+        metodo = int(input("\n==Método de Remoção==\n[1] Por Nome\n[2] Por ID" \
+"\nSelecione o método que deseja: "))
+        if metodo == 1:
+            nome = input("Por favor, digite a o nome: ")
+            for c in range(self.tamanho):
+                if self.matriz[c][0] == nome:
+                    linha = c
+                    break
+            print(f"Cliente Removido:\n{self.matriz[linha]}")
+            del(self.matriz[linha])
+        elif metodo == 2:
+            cracha = int(input("Por favor, digite o ID do cliente: "))
+            for c in range(self.tamanho):
+                if self.matriz[c][6] == str(cracha):
+                    linha = c
+                    break
+            print(f"Cliente Removido:\n{self.matriz[linha]}")
+            del(self.matriz[linha])
+            
+#=========================================================================================================#
     def menu_interativo(self):
         while True:
             print("\n===   MENU   ===")
@@ -160,24 +222,21 @@ class Gerenciador_Matriz:
             try:
                 pergunta = int(input("O que deseja fazer? "))
             except ValueError:
-                print("Erro, favor entre com um número entre 1 e 4")
+                print("Erro, favor entre com um número entre 1 e 5")
                 continue
-            
+
             if pergunta == 1:
                 self.mostrar_matriz()
-
-            # elif pergunta == 2:
-            #     buscar_cliente()
-            # elif pergunta == 3:
-            #     adicionar_cliente()
-            # elif pergunta == 4:
-            #     remover_cliente()
-            # elif pergunta == 5:
-            #     atualizar_matriz()
-            #     break
+            elif pergunta == 2:
+                self.buscar_cliente()
+            elif pergunta == 3:
+                self.adicionar_cliente()
+            elif pergunta == 4:
+                self.remover_cliente()
+            elif pergunta == 5:
+                # atualizar_matriz()
+                break
 # #=========================================================================================================#
-
-
 
 matriz1 = Gerenciador_Matriz("pequeno.csv")
 matriz1.menu_interativo()

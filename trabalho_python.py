@@ -2,6 +2,7 @@ import time
 import random
 import datetime
 import numpy as np
+#importando minha biblioteca com cores
 from cores import cores
 from cores import linha_menu
 from cores import solicitar
@@ -75,11 +76,6 @@ def gerar_arquivo(nome_arquivo, linhas, nome_historico):
     with open(nome_historico, "w", encoding="utf-8") as historico:
         historico.write(f"Tempo de criação do arquivo {nome_arquivo} = {tempo:.2f} segundos\n")
 
-gerar_arquivo("pequeno.csv", 100, "hist_pequeno.txt")
-gerar_arquivo("medio.csv", 1000, "hist_medio.txt")
-gerar_arquivo("grande.csv", 10000, "hist_grande.txt")
-gerar_arquivo("gigante.csv", 100000, "hist_gigante.txt")
-
 class Gerenciador_Matriz:
     #caracteristicas de cada matriz
     def __init__(self, nome_arquivo, nome_historico):
@@ -113,8 +109,13 @@ class Gerenciador_Matriz:
             print(f"Arquivo {self.arquivo} não encontrado!\nCertifique-se de colocar o nome correto!")
 #=========================================================================================================#
     def mostrar_matriz(self):
+        inicio = time.time()
         for linha in self.matriz: #pra cada linha da matriz, da um print
             print(linha)
+        tempo = time.time() - inicio
+        #escrever o tempo no historico do arquivo
+        with open(self.historico, "a", encoding="utf-8") as historico:
+            historico.write(f"\n Tempo de mostrar a matriz do arquivo: '{self.arquivo}' em Python = {tempo:.2f} segundos\n")
 #=========================================================================================================#
     def encontrar_linha(self, n, metodo):
     #uma funcao pra, a partir de um tipo de busca (por nome ou id) encontre a linha da matriz que esse parametro esta contido
@@ -146,48 +147,82 @@ class Gerenciador_Matriz:
             print(f"{cores["erro"]}Erro, {problema}{cores["reset"]}")
 #=========================================================================================================#
     def buscar_cliente(self):
-        try:
-            #pergunto o metodo (por nome ou ID) e o conteudo que deseja ver sobre o cliente (tudo ou apenas nome, id e gasto)
-            print(f"\n===  Método da Busca  ===\n{linha_menu(1, "Por Nome")}\n{linha_menu(2, "Por ID")}\n")
-            metodo = int(input(solicitar("Selecione o método de busca que deseja: ")))
-            print(f"\n=== Conteúdo da Busca ===\n{linha_menu(3, "Dados Completos")}\n{linha_menu(4, "Apenas Nome, ID e Gasto")}")
-            conteudo = int(input(solicitar("Selecione o conteúdo de busca que deseja: ")))
-            #se escolher por nome, peço o nome e jogo pra funcao de encontrar_linhas
-            if metodo == 1:
-                nome = input(solicitar("Por favor, digite o nome do Cliente: "))
-                linha = self.encontrar_linha(1, nome)
-                #se escolheu conteudo todo, printo toda a linha da matriz (obs: em todos os casos, a linha tem ter um valor, por isso "and linha")
-                if conteudo == 3 and linha:
-                    print(resultado("\nDados Cadastrados:\n", self.matriz[linha]))
-                #se escolheu apenas nome, id, gasto, entao so printo as colunas 0 (nome), 6(id), 5(gasto)
-                elif conteudo == 4 and linha:
-                    print(resultado("\nCliente: ", self.matriz[linha][0]))
-                    print(resultado("ID do Cliente: ", self.matriz[linha][6]))
-                    print(resultado("Gasto do Cliente: ", self.matriz[linha][5]))
-            #se escolher por id, faço examente as mesmas coisas de antes, so que peço o ID ao inves do nome e jogo pra funcao encontrar_linha
-            elif metodo == 2:
-                cracha = int(input(solicitar("Por favor, digite o ID do cliente: ")))
-                linha = self.encontrar_linha(2,cracha)
-                if conteudo == 3 and linha:
-                    print(resultado("\nDados Cadastrados:\n", self.matriz[linha]))
-                elif conteudo == 4 and linha:
-                    print(resultado("\nCliente: ", self.matriz[linha][0]))
-                    print(resultado("ID do Cliente: ", self.matriz[linha][6]))
-                    print(resultado("Gasto do Cliente: ", self.matriz[linha][5]))
-        #erro que abrange os valores inesperados (onde deveria ser int, ser str e etc)
-        except ValueError:
-            print(erro("Erro, digite valores válidos!"))
-#=========================================================================================================#
-    def coletardados(self):
-        #indicar nome
-        nome = str(input(solicitar("Digite seu nome: "))).strip()
-        #indicar idade
         while True:
             try:
+                #pergunto o metodo (por nome ou ID) e o conteudo que deseja ver sobre o cliente (tudo ou apenas nome, id e gasto)
+                print(f"\n===  Método da Busca  ===\n{linha_menu(1, "Por Nome")}\n{linha_menu(2, "Por ID")}\n")
+                metodo = int(input(solicitar("Selecione o método de busca que deseja: ")))
+                if metodo not in [1,2]:
+                    raise IndexError("Escolha entre [1] e [2]")
+                print(f"\n=== Conteúdo da Busca ===\n{linha_menu(3, "Dados Completos")}\n{linha_menu(4, "Apenas Nome, ID e Gasto")}")
+                conteudo = int(input(solicitar("Selecione o conteúdo de busca que deseja: ")))
+                if conteudo not in [3,4]:
+                    raise IndexError("Escolha entre [3] e [4]")
+                #se escolher por nome, peço o nome e jogo pra funcao de encontrar_linhas
+                if metodo == 1:
+                    nome = input(solicitar("Por favor, digite o nome do Cliente: "))
+                    #se o nome nao for com letras, força o erro
+                    if not nome.isalpha():
+                        raise IndexError("Digite o nome apenas com letras!")
+                    inicio = time.time()
+                    linha = self.encontrar_linha(1, nome)
+                    tempo = time.time() - inicio
+                    #se escolheu conteudo todo, printo toda a linha da matriz (obs: em todos os casos, a linha tem ter um valor, por isso "and linha")
+                    if conteudo == 3 and linha:
+                        print(resultado("\nDados Cadastrados:\n", self.matriz[linha]))
+                        #atualizo o arquivo de historico
+                        with open(self.historico, "a", encoding="utf-8") as historico:
+                            historico.write(f"\nLinha buscada: {self.matriz[linha]}\nTempo de busca: = {tempo:.2f} segundos\n")
+                    #se escolheu apenas nome, id, gasto, entao so printo as colunas 0 (nome), 6(id), 5(gasto)
+                    elif conteudo == 4 and linha:
+                        print(resultado("\nCliente: ", self.matriz[linha][0]))
+                        print(resultado("ID do Cliente: ", self.matriz[linha][6]))
+                        print(resultado("Gasto do Cliente: ", self.matriz[linha][5]))
+                        #atualzio o arquivo de historico
+                        with open(self.historico, "a", encoding="utf-8") as historico:
+                            historico.write(f"\n Conteúdo buscado: {self.matriz[linha][0]}, {self.matriz[linha][6]}, {self.matriz[linha][5]}\n"
+                                            f" Tempo de busca: = {tempo:.2f} segundos\n")
+                #se escolher por id, faço examente as mesmas coisas de antes, so que peço o ID ao inves do nome e jogo pra funcao encontrar_linha
+                elif metodo == 2:
+                    cracha = int(input(solicitar("Por favor, digite o ID do cliente: ")))
+                    inicio = time.time()
+                    linha = self.encontrar_linha(2,cracha)
+                    tempo = time.time() - inicio
+                    if conteudo == 3 and linha:
+                        print(resultado("\nDados Cadastrados:\n", self.matriz[linha]))
+                        with open(self.historico, "a", encoding="utf-8") as historico:
+                            historico.write(f"\nLinha buscada: {self.matriz[linha]}\nTempo de busca: = {tempo:.2f} segundos\n")
+                    elif conteudo == 4 and linha:
+                        print(resultado("\nCliente: ", self.matriz[linha][0]))
+                        print(resultado("ID do Cliente: ", self.matriz[linha][6]))
+                        print(resultado("Gasto do Cliente: ", self.matriz[linha][5]))
+                        with open(self.historico, "a", encoding="utf-8") as historico:
+                            historico.write(f"\n Conteúdo buscado: {self.matriz[linha][0]}, {self.matriz[linha][6]}, {self.matriz[linha][5]}\n"
+                                            f" Tempo de busca: = {tempo:.2f} segundos\n")
+                break
+            #erro que abrange os problemas acima
+            except IndexError as problema:
+                print(f"{cores["erro"]}Erro, {problema}{cores["reset"]}")
+            except ValueError:
+                print(erro("Reposta inválida!"))
+#=========================================================================================================#
+    def coletardados(self):
+        while True:
+            try:
+                #indicar nome (retiro os espacos pra verirficar se so tem letra)
+                nome = input(solicitar("Digite seu nome: "))
+                if not ("".join(nome.split())).isalpha():
+                    raise ValueError
+                break
+            except ValueError:
+                print(erro("Digite seu nome apenas com letras!"))
+        while True:
+            try:
+                #indicar idade
                 idade = int(input(solicitar("Digite sua idade: ")))
                 break
             except ValueError:
-                print(erro("Digite apenas sua idade com números!"))
+                print(erro("Digite sua idade apenas com números!"))
         #indicar data de aniversario
         while True:
             aniversario = input(solicitar("Digite sua data de nascimento (dd/mm/aaaa): "))
@@ -202,21 +237,28 @@ class Gerenciador_Matriz:
         #indicar quais sao os dependentes
         while True:
             try:
-                pergunta = str(input(solicitar("Você está acompanhado(a) de algum não pagante?\nResponda com Sim ou Não: ")).strip().lower())
+                pergunta = str(input(solicitar("\nVocê está acompanhado(a) de algum não pagante?\nResponda com Sim ou Não: ")).strip().lower())
                 resposta = pergunta.split()[0]
                 lista_acompanhantes = []
                 if resposta in ["s", "sim"]:
                     numero = int(input(solicitar("Quantos dependentes estão com você? ")))
-                    for a in range(numero):
-                        nomedep = str(input(solicitar("Digite o nome do(a) dependente: ")))
-                        lista_acompanhantes.append(nomedep)
+                    while True:
+                        try:
+                            for a in range(numero):
+                                nomedep = input(solicitar("Digite o nome do(a) dependente: "))
+                                if not ("".join(nomedep.split())).isalpha():
+                                    raise ValueError
+                                lista_acompanhantes.append(nomedep)
+                            break
+                        except ValueError:
+                            print(erro("Digite o nome dos dependentes apenas com letras!"))
                 elif resposta in ["n", "nao", "não"]:
                     pass
                 else:
                     raise ValueError
                 break
             except (ValueError, IndexError):
-                print(erro("Resposta Inválida!"))
+                print(erro("Responda inválida!"))
 
         #a partir da lista de acompanhantes, formata ["A", "B"] para "A, B" Caso a lista seja vazia, recebe "Nenhum"
         if not lista_acompanhantes:
@@ -234,31 +276,57 @@ class Gerenciador_Matriz:
         #busco todos os dados pela funcao de coleta
         cliente = self.coletardados()
         #se tiver 7 dados certinho (nome, idade, entrada, aniversario, dependenetes, gastos, cracha) entao eu adicino na matriz
+        inicio = time.time()
         if len(cliente) == 7:
             self.matriz.append(cliente)
             self.tamanho += 1 #aumento o tamanho da matriz em 1
+            tempo = time.time() - inicio
+            #escrever o tempo no historico do arquivo
+            with open(self.historico, "a", encoding="utf-8") as historico:
+                historico.write(f"\n Cliente adicionado: {cliente}\n Tempo para adição: {tempo:.2f} segundos\n")
 #=========================================================================================================#
     def remover_cliente(self):
-        print(f"\n===  Método de Remoção  ===\n{linha_menu(1, "Por Nome")}\n{linha_menu(2, "Por ID")}\n")
-        #pergunto o metodo de remocao (por nome ou id)
-        metodo = int(input(solicitar("Selecione o método que deseja: ")))
-        #caso escolha por nome, pergunto o nome e jogo pra funcao de encontrar_linha desse nome
-        if metodo == 1:
-            nome = input(solicitar("Por favor, digite o nome: "))
-            linha = self.encontrar_linha(1, nome)
-            #se o nome existir, entao eu deleto (del) a linha da matriz
-            if linha:
-                print(resultado("\nCliente Removido:\n", self.matriz[linha]))
-                del(self.matriz[linha])
-                self.tamanho -= 1 #reduzo o tamanho da matriz em 1
-        #caso escolha por id, faço o mesmo que anteriomente, mas jogo o id na funcao de encontrar_linhas
-        elif metodo == 2:
-            cracha = input(solicitar("Por favor, digite o ID do cliente: "))
-            linha = self.encontrar_linha(2, cracha)
-            if linha:
-                print(resultado("\nCliente Removido:\n", self.matriz[linha]))
-                del(self.matriz[linha])
-                self.tamanho -= 1
+        while True:
+            try:
+                print(f"\n===  Método de Remoção  ===\n{linha_menu(1, "Por Nome")}\n{linha_menu(2, "Por ID")}\n")
+                #pergunto o metodo de remocao (por nome ou id)
+                metodo = int(input(solicitar("Selecione o método que deseja: ")))
+                if metodo not in [1,2]:
+                    raise IndexError("Escolha entre [1] e [2]")
+                #caso escolha por nome, pergunto o nome e jogo pra funcao de encontrar_linha desse nome
+                if metodo == 1:
+                    nome = input(solicitar("Por favor, digite o nome: "))
+                    #se nao for um NOME, força o erro
+                    if not nome.isalpha():
+                        raise IndexError("Digite o nome apenas com letras!")
+                    inicio = time.time()
+                    linha = self.encontrar_linha(1, nome)
+                    tempo = time.time() - inicio
+                    #se o nome existir, entao eu deleto (del) a linha da matriz
+                    if linha:
+                        print(resultado("\nCliente Removido:\n", self.matriz[linha]))
+                        #escrever o tempo no historico do arquivo
+                        with open(self.historico, "a", encoding="utf-8") as historico:
+                            historico.write(f"\n Cadastro removido: {self.matriz[linha]}\n Tempo para remoção: {tempo:.2f} segundos\n")
+                        del(self.matriz[linha])
+                        self.tamanho -= 1 #reduzo o tamanho da matriz em 1
+                #caso escolha por id, faço o mesmo que anteriomente, mas jogo o id na funcao de encontrar_linhas
+                elif metodo == 2:
+                    cracha = int(input(solicitar("Por favor, digite o ID do cliente: ")))
+                    inicio = time.time()
+                    linha = self.encontrar_linha(2, cracha)
+                    tempo = time.time() - inicio
+                    if linha:
+                        print(resultado("\nCliente Removido:\n", self.matriz[linha]))
+                        with open(self.historico, "a", encoding="utf-8") as historico:
+                            historico.write(f"\n Cadastro removido: {linha}\n Tempo para remoção: {tempo:.2f} segundos\n")
+                        del(self.matriz[linha])
+                        self.tamanho -= 1
+                break
+            except IndexError as problema:
+                print(f"{cores["erro"]}Erro, {problema}{cores["reset"]}")
+            except ValueError:
+                print(erro("Resposta inválda!"))
 #=========================================================================================================#
     def menu_interativo(self):
         while True:
@@ -278,7 +346,7 @@ class Gerenciador_Matriz:
                     raise ValueError
             #uso o except pra ficar voltando pro inicio (com o continue) toda vez que o input vier em formato indesejado
             except ValueError:
-                print(erro("Erro, favor escolha um número entre 1 e 5"))
+                print(erro("Erro, escolha entre [1] e [5]"))
                 continue
 
             if pergunta == 1:
@@ -292,181 +360,41 @@ class Gerenciador_Matriz:
             elif pergunta == 5:
                 # atualizar_matriz()
                 break
-# #=========================================================================================================#
+#=========================================================================================================#
 
-matriz1 = Gerenciador_Matriz("pequeno.csv", "hist_pequeno.txt")
-matriz1.menu_interativo()
-#     @staticmethod
+gerar_arquivo("pequeno.csv", 100, "hist_pequeno.txt")
+gerar_arquivo("medio.csv", 1000, "hist_medio.txt")
+gerar_arquivo("grande.csv", 10000, "hist_grande.txt")
+gerar_arquivo("gigante.csv", 100000, "hist_gigante.txt")
 
-#     def coletardados():
-#         nome = str(input("Digite seu nome: ").strip().lower())
-
-#         while True:
-#             try:
-#                 idade = int(input("Digite sua idade: "))
-#                 break
-#             except ValueError:
-#                 print("Digite apenas sua idade com números!")
-
-#         while True:
-#             aniversario = input("Digite sua data de nascimento (dd/mm/aaaa): ")
-#             try:
-#                 dataniver = datetime.strptime(aniversario, "%d/%m/%Y").date()
-#                 dataniver = dataniver.strftime("%d/%m/%Y")
-#                 break
-#             except ValueError:
-#                 print("Formato inválido. O correto é dd/mm/aaaa.")
-
-#         dia_entrada = datetime.now().strftime("%d/%m/%Y")
-
-#         while True:
-#             try:
-#                 dependentes = str(input("Você está acompanhado(a) de algum não pagante?\nResponda com Sim ou Não: ").strip().lower())
-#                 resposta = dependentes.split()[0]
-#                 acompanhantes = []
-#                 if resposta in ["s", "sim"]:
-#                     numero = int(input("Quantos dependentes estão com você? "))
-#                     for a in range(numero):
-#                         nomedep = str(input("Digite o nome do(a) dependente: "))
-#                         acompanhantes.append(nomedep)
-#                 if resposta in ["n", "nao", "não"]:
-#                     pass
-#                 break
-#             except:
-#                 print("Resposta inválida. Entre com Sim ou Não.")
-        
-#         gastos = round((len(acompanhantes)+1)*39.90, 2)
-
-#         return {
-#         "Nome": nome,
-#         "Idade": idade,
-#         "Dia da Entrada": dia_entrada,
-#         "Data Aniversário": dataniver,
-#         "Dependentes": acompanhantes,
-#         "Gasto": "Gratuito" if int(dataniver[3:5]) == int(dia_entrada[3:5]) else round((len(acompanhantes)+1)*39.90, 2)
-#         }
-
-
-# novo_cliente = Cliente()
-# with open("pequeno.txt", "a", encoding="utf-8") as arquivo:
-#     arquivo.write(str(novo_cliente.coletardados())  + "\n")
-
-
-
-#     def menu_interativo():
-#         while True:
-#             print("\n===   MENU   ===")
-#             print("1 - Novo cliente")
-#             print("2 - Ver clientes")
-#             print("3 - Retirar cliente")
-#             print("4 - Sair")
-#             print("")
-
-#             try:
-#                 pergunta = int(input("O que deseja fazer? "))
-#             except ValueError:
-#                 print("Erro, favor entre com um número entre 1 e 4")
-#                 continue
-
-#             if pergunta == 1:
-#                 dados = coletardados()
-#                 if dados:
-#                     novo_cliente = Cliente(*dados)
-#                     matriz_resposta.append(novo_cliente)
-#                     print("\nCliente cadastrado com sucesso!")
-            
-#             elif pergunta == 2:
-#                 if not matriz_resposta:
-#                     print("\nNenhum cliente cadastrado ainda.")
-#                 else:
-#                     print("\n=== CLIENTES CADASTRADOS ===")
-#                     i = 1
-#                     for cliente in matriz_resposta:
-#                         print("\nCliente :", i)
-#                         print("Nome:", cliente.nome.title())  
-#                         print("Idade:", cliente.idade)
-#                         print("Data de entrada:", cliente.dia_entrada)
-#                         print("Aniversário:", cliente.aniversario)
-                        
-                        
-#                         if datetime.now().strftime("%d/%m") == datetime.strptime(cliente.aniversario, "%d/%m/%Y").strftime("%d/%m"):
-#                             print("Parabéns! Hoje você não paga(;")
-                            
-#                         if cliente.dependentes: 
-#                             print("Dependentes:", ", ".join(cliente.dependentes))
-#                         else:
-#                             print("Dependentes: Nenhum")
-#                         i += 1
-
-#             elif pergunta == 3:
-#                 if not matriz_resposta:
-#                     print("\nNenhum cliente cadastrado para remover.")
-#                 else:
-#                     try:
-#                         num = int(input("\nDigite o número do cliente a remover: "))
-#                         if 1 <= num <= len(matriz_resposta):
-#                             removido = matriz_resposta.pop(num-1)
-#                             print(f"\nCliente {removido.nome} removido com sucesso!")
-#                         else:
-#                             print("\nNúmero inválido!")
-#                     except ValueError:
-#                         print("\nDigite um número válido!")
-
-#             elif pergunta == 4:
-#                 print("\nSaindo do sistema...")
-#                 break
-            
-#             else:
-#                 print("\nInválido, tente novamente com número de 1 a 4")
-
-
-# def coletardados():
-#     try:
-#         nome = str(input("Digite seu nome: ").strip().lower())
-#         if not nome.replace(" ", "").isalpha():
-#             print("Nome deve conter apenas letras e espaços")
-#             return None
-#     except:
-#         print("Formato inválido para nome")
-#         return None
-
-#     try:
-#         idade = int(input("Digite sua idade: "))
-#         if idade <= 0:
-#             print("Idade deve ser positiva")
-#             return None
-#     except ValueError:
-#         print("Digite apenas números para idade!")
-#         return None
-
-#     while True:
-#         aniversario = input("Digite sua data de nascimento (dd/mm/aaaa): ")
-#         try:
-#             datetime.strptime(aniversario, "%d/%m/%Y")
-#             break
-#         except ValueError:
-#             print("Formato inválido. O correto é dd/mm/aaaa.")
-
-#     dia_entrada = datetime.now().strftime("%d/%m/%Y")
-
-#     while True:
-#         resposta = input("Você está acompanhado(a) de algum não pagante? (Sim/Não): ").lower().strip()
-#         if resposta in ["sim", "s", "não", "nao", "n"]:
-#             break
-#         else:
-#             print("Resposta inválida. Responda com Sim ou Não.")
-
-#     dependentes = []
-#     if resposta.startswith("s"):
-#         try:
-#             numero = int(input("Quantos dependentes estão com você? "))
-#             for i in range(numero):
-#                 nome_dep = input(f"{i + 1}º dependente: ")
-#                 dependentes.append(nome_dep)
-#         except ValueError:
-#             print("Digite um número válido para quantidade de dependentes!")
-#             return None
-
-#     return nome, idade, dia_entrada, aniversario, dependentes
-
-# Cliente.menu_interativo()
+#menu para escolher qual matriz quer interagir
+def menu_inicial():
+    matrizpequena = Gerenciador_Matriz("pequeno.csv", "hist_pequeno.txt")
+    matrizmedia = Gerenciador_Matriz("medio.csv", "hist_medio.txt")
+    matrizgrande = Gerenciador_Matriz("grande.csv", "hist_grande.txt")
+    matrizgigante = Gerenciador_Matriz("gigante.csv", "hist_gigante.txt")
+    while True:
+        try:
+            print("\n===== Arquivos Gerados =====")
+            print(linha_menu(1, "Matriz Pequena"))
+            print(linha_menu(2, "Matriz Média"))
+            print(linha_menu(3, "Matriz Grande"))
+            print(linha_menu(4, "Matriz Gigante"))
+            print(linha_menu(5, "Finalizar Programa"))
+            pergunta = int(input(solicitar("Qual arquivo deseja alterar? ")))
+            if pergunta == 1:
+                matrizpequena.menu_interativo()
+            elif pergunta == 2:
+                matrizmedia.menu_interativo()
+            elif pergunta == 3:
+                matrizgrande.menu_interativo()
+            elif pergunta == 4:
+                matrizgigante.menu_interativo()
+            elif pergunta == 5:
+                break
+                #salvar arquivo
+            else:
+                raise ValueError
+        except ValueError:
+            print(erro("Erro, escreva um valor entre 1 e 4"))
+menu_inicial()

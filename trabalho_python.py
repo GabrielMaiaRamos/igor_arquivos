@@ -2,13 +2,14 @@ import time
 import random
 import datetime
 import numpy as np
-#importando minha biblioteca com cores
+#importando minha biblioteca com cores e padroes
 from cores import cores
 from cores import linha_menu
 from cores import solicitar
 from cores import erro
 from cores import resultado
-
+#==========================================================================================================================#
+#dicionarios de nome, sobrenome e numeros unicos para o cracha
 nomes = ["Lucas", "Ana", "Pedro", "Julia", "Gabriel", "Maria", "Joao", "Larissa", "Felipe", "Camila", 
          "Rafael", "Beatriz", "Bruno", "Carolina", "Daniel", "Isabela", "Thiago", "Amanda", "Leonardo", "Fernanda",
          "Mateus", "Leticia", "Gustavo", "Mariana", "Andre", "Sophia", "Rodrigo", "Vitoria", "Diego", "Alice",
@@ -20,18 +21,16 @@ sobrenome = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalh
              "Castro", "Correia", "Pinto", "Farias", "Campos", "Moreira", "Cunha", "Pires", "Andrade", "Melo",
              "Franco", "Nunes", "Barros", "Duarte", "Vieira", "Coelho", "Miranda", "Azevedo", "Siqueira", "Fonseca"]
 numeros = np.random.choice(115000, size=115000, replace=False)
-
+#==========================================================================================================================#
+#funcao para gerar dados de clientes aleatorios
 def gerar_dados():
-
     nome_completo = random.choice(nomes) + " " + random.choice(sobrenome)
-
     #gerar dependendentes aleatorios e formatar de ["A", "B"] para "A, B"
     lista_dependentes = [random.choice(nomes) for c in range(random.randint(0,3))]
     if not lista_dependentes:
         dependentes = "Nenhum"
     else:
         dependentes = ", ".join(lista_dependentes)
-
     #gerar data de aniversario e data de entrada aleatorios e, caso necessario, adicionar 0 no inicio
     dia_ani = random.randint(1,28)
     mes_ani = random.randint(1,12)
@@ -41,20 +40,16 @@ def gerar_dados():
     dia_entrada = random.randint(1,28)
     mes_entrada = random.randint(1,12)
     entrada = f"{dia_entrada:02d}/{mes_entrada:02d}/2025"
-
     #gerar idade a partir do ano aleatorio gerado
     idade = 2025-int(ano_ani)
-
     #se o mes do dia_atual for igual ao mes do aniversaio da pessoa, o acesso é gratuioto, se nao, 39.90 por pessoa
     gasto = "Gratuito" if int(mes_entrada) == int(mes_ani) else str(round((len(dependentes.split())+1)*39.90, 2))+"0"
-
     #escolhe um ID dentro dos numeros unicos
     cracha = random.choice(numeros)
-
     linha = [nome_completo, idade, entrada, ani, dependentes, gasto, cracha]
     return linha
-
-
+#==========================================================================================================================#
+#funcao para gerar os 4 arquivos e os 4 historicos a partir dos dados aleatorios
 def gerar_arquivo(nome_arquivo, linhas, nome_historico):
     #cabecalho da matriz (primeira linha)
     cabecalho = ["Nome", "Idade", "Data de Entrada", "Data de Aniversario", "Dependentes", "Gasto", "ID"]
@@ -75,7 +70,8 @@ def gerar_arquivo(nome_arquivo, linhas, nome_historico):
     #gerar o txt para guardar o histórico
     with open(nome_historico, "w", encoding="utf-8-sig", newline='') as historico:
         historico.write(f"Tempo de criacao do arquivo {nome_arquivo} = {tempo:.6f} segundos\n")
-
+#==========================================================================================================================#
+#class para criar matrizes e manipular elas
 class Gerenciador_Matriz:
     #caracteristicas de cada matriz
     def __init__(self, nome_arquivo, nome_historico):
@@ -86,7 +82,7 @@ class Gerenciador_Matriz:
         self.tamanho = int
         self.carregar_matriz()
 #=========================================================================================================#
-    #carregar as linhas da matriz e contar o tempo que leva
+    #funcao para carregar as linhas da matriz na caracteristica "self.matriz"
     def carregar_matriz(self):
         try:
             inicio = time.time()
@@ -123,7 +119,6 @@ class Gerenciador_Matriz:
             parametro = metodo
             #incializo a linha_correpondente como False (caso nao existe o paramtro na matriz)
             linha_correpondente = False
-            
             if n == 1:
                 #uso o "for else" pra ver se o nome existe na matriz, se nao, forca o erro
                 for linha in range(self.tamanho):
@@ -141,7 +136,7 @@ class Gerenciador_Matriz:
                         break
                 else:
                     raise ValueError(f"o ID: '{metodo}' não está na lista!")
-                    
+        
             return linha_correpondente
         #se vier pro except, printa o problema
         except ValueError as problema:
@@ -263,7 +258,6 @@ class Gerenciador_Matriz:
                 break
             except (ValueError, IndexError):
                 print(erro("Responda inválida!"))
-
         #a partir da lista de acompanhantes, formata ["A", "B"] para "A, B" Caso a lista seja vazia, recebe "Nenhum"
         if not lista_acompanhantes:
             dependentes = "Nenhum"
@@ -332,7 +326,6 @@ class Gerenciador_Matriz:
             except ValueError:
                 print(erro("Resposta inválda!"))
 #=========================================================================================================#
-
     def atualizar_arquivo(self):
         inicio = time.time()
         with open(self.arquivo, "w", encoding="utf-8-sig", newline='') as arquivo:

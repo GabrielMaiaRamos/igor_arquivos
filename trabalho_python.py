@@ -9,13 +9,13 @@ from cores import solicitar
 from cores import erro
 from cores import resultado
 
-nomes = ["Lucas", "Ana", "Pedro", "Julia", "Gabriel", "Maria", "João", "Larissa", "Felipe", "Camila", 
+nomes = ["Lucas", "Ana", "Pedro", "Julia", "Gabriel", "Maria", "Joao", "Larissa", "Felipe", "Camila", 
          "Rafael", "Beatriz", "Bruno", "Carolina", "Daniel", "Isabela", "Thiago", "Amanda", "Leonardo", "Fernanda",
-         "Mateus", "Letícia", "Gustavo", "Mariana", "André", "Sophia", "Rodrigo", "Vitória", "Diego", "Alice",
-         "Eduardo", "Helena", "Vinicius", "Manuela", "Victor", "Júlia", "Henrique", "Giovanna", "Caio", "Luana",
-         "Marcelo", "Yasmin", "Arthur", "Gabriela", "Fábio", "Nicole", "Otávio", "Melissa", "Renato", "Bianca"]
+         "Mateus", "Leticia", "Gustavo", "Mariana", "Andre", "Sophia", "Rodrigo", "Vitoria", "Diego", "Alice",
+         "Eduardo", "Helena", "Vinicius", "Manuela", "Victor", "Julia", "Henrique", "Giovanna", "Caio", "Luana",
+         "Marcelo", "Yasmin", "Arthur", "Gabriela", "Fabio", "Nicole", "Otavio", "Melissa", "Renato", "Bianca"]
 sobrenome = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida",
-             "Costa", "Nascimento", "Araújo", "Barbosa", "Ribeiro", "Martins", "Gomes", "Rocha", "Teixeira", "Moura",
+             "Costa", "Nascimento", "Araujo", "Barbosa", "Ribeiro", "Martins", "Gomes", "Rocha", "Teixeira", "Moura",
              "Dias", "Ramos", "Cardoso", "Machado", "Freitas", "Lopes", "Rezende", "Monteiro", "Mendes", "Cavalcanti",
              "Castro", "Correia", "Pinto", "Farias", "Campos", "Moreira", "Cunha", "Pires", "Andrade", "Melo",
              "Franco", "Nunes", "Barros", "Duarte", "Vieira", "Coelho", "Miranda", "Azevedo", "Siqueira", "Fonseca"]
@@ -60,8 +60,8 @@ def gerar_arquivo(nome_arquivo, linhas, nome_historico):
     cabecalho = ["Nome", "Idade", "Data de Entrada", "Data de Aniversario", "Dependentes", "Gasto", "ID"]
     #comeca a contar o tempo
     inicio = time.time()
-    #abre ou cria o arquivo
-    with open(nome_arquivo, "w", encoding="utf-8") as arquivo:   
+    #abre ou cria o arquivo com encoding especifico para Excel
+    with open(nome_arquivo, "w", encoding="utf-8-sig", newline='') as arquivo:
         #adiciona o cabecalho uma unica vez
         arquivo.write(";".join(cabecalho) + "\n")
         #escreve o resto das liinhas
@@ -73,8 +73,8 @@ def gerar_arquivo(nome_arquivo, linhas, nome_historico):
     #salva o tempo de geracao do arquivo
     tempo = time.time() - inicio
     #gerar o txt para guardar o histórico
-    with open(nome_historico, "w", encoding="utf-8") as historico:
-        historico.write(f"Tempo de criação do arquivo {nome_arquivo} = {tempo:.2f} segundos\n")
+    with open(nome_historico, "w", encoding="utf-8-sig", newline='') as historico:
+        historico.write(f"Tempo de criacao do arquivo {nome_arquivo} = {tempo:.6f} segundos\n")
 
 class Gerenciador_Matriz:
     #caracteristicas de cada matriz
@@ -102,11 +102,11 @@ class Gerenciador_Matriz:
                 self.tamanho = len(self.matriz)
             tempo = time.time() - inicio
             #escrever o tempo no historico do arquivo
-            with open(self.historico, "a", encoding="utf-8") as historico:
-                historico.write(f"Tempo de formatação do '{self.arquivo}' em matriz no Python = {tempo:.2f} segundos\n")
+            with open(self.historico, "a", encoding="utf-8-sig") as historico:
+                historico.write(f"Tempo de formatacao do '{self.arquivo}' em matriz no Python = {tempo:.6f} segundos\n")
         #caso nao existe o nome do arquivo, da erro
         except FileNotFoundError:
-            print(f"Arquivo {self.arquivo} não encontrado!\nCertifique-se de colocar o nome correto!")
+            print(f"Arquivo {self.arquivo} nao encontrado!\nCertifique-se de colocar o nome correto!")
 #=========================================================================================================#
     def mostrar_matriz(self):
         inicio = time.time()
@@ -114,8 +114,8 @@ class Gerenciador_Matriz:
             print(linha)
         tempo = time.time() - inicio
         #escrever o tempo no historico do arquivo
-        with open(self.historico, "a", encoding="utf-8") as historico:
-            historico.write(f"\n Tempo de mostrar a matriz do arquivo: '{self.arquivo}' em Python = {tempo:.2f} segundos\n")
+        with open(self.historico, "a", encoding="utf-8-sig") as historico:
+            historico.write(f"\n Tempo de mostrar a matriz do arquivo: '{self.arquivo}' em Python = {tempo:.6f} segundos\n")
 #=========================================================================================================#
     def encontrar_linha(self, n, metodo):
     #uma funcao pra, a partir de um tipo de busca (por nome ou id) encontre a linha da matriz que esse parametro esta contido
@@ -123,28 +123,30 @@ class Gerenciador_Matriz:
             parametro = metodo
             #incializo a linha_correpondente como False (caso nao existe o paramtro na matriz)
             linha_correpondente = False
+            
             if n == 1:
-                for linha in range((self.tamanho)+1):
-                    #se eu chegar ao fim da matriz, redireciono ao except com o problema (nome nao esta na lista)
-                    if linha == self.tamanho:
-                        raise ValueError(f"o nome '{metodo}' não está na lista!")
+                #uso o "for else" pra ver se o nome existe na matriz, se nao, forca o erro
+                for linha in range(self.tamanho):
                     #se o meu parametro for igual à algum elemento que esteja na coluna 0 (nomes), entao eu salvo essa linha
-                    elif self.matriz[linha][0] == parametro:
+                    if self.matriz[linha][0] == parametro:
                         linha_correpondente = linha
                         break
+                else:
+                    raise ValueError(f"o nome '{metodo}' não está na lista!")
             #mesma coisa que a anterior, mas agora o parametro é a ID, entao vou comparar com elementos da coluna 6 (IDs)
             elif n == 2:
-                for linha in range((self.tamanho)+1):
-                    if linha == self.tamanho:
-                        #como no if anterior, mas agora o problema enviado é (ID nao estao na lista)
-                        raise ValueError(f"o ID: '{metodo}' não está na lista!")
-                    elif self.matriz[linha][6] == str(parametro):
+                for linha in range(self.tamanho):
+                    if self.matriz[linha][6] == str(parametro):
                         linha_correpondente = linha
                         break
+                else:
+                    raise ValueError(f"o ID: '{metodo}' não está na lista!")
+                    
             return linha_correpondente
         #se vier pro except, printa o problema
         except ValueError as problema:
             print(f"{cores["erro"]}Erro, {problema}{cores["reset"]}")
+            return False  # Retorna False em caso de erro
 #=========================================================================================================#
     def buscar_cliente(self):
         while True:
@@ -158,47 +160,49 @@ class Gerenciador_Matriz:
                 conteudo = int(input(solicitar("Selecione o conteúdo de busca que deseja: ")))
                 if conteudo not in [3,4]:
                     raise IndexError("Escolha entre [3] e [4]")
-                #se escolher por nome, peço o nome e jogo pra funcao de encontrar_linhas
+                #se escolher por nome, peco o nome e jogo pra funcao de encontrar_linhas
                 if metodo == 1:
                     nome = input(solicitar("Por favor, digite o nome do Cliente: "))
-                    #se o nome nao for com letras, força o erro
-                    if not nome.isalpha():
+                    #se o nome nao for com letras, forca o erro
+                    if not ("".join(nome.split())).isalpha():
                         raise IndexError("Digite o nome apenas com letras!")
                     inicio = time.time()
                     linha = self.encontrar_linha(1, nome)
                     tempo = time.time() - inicio
-                    #se escolheu conteudo todo, printo toda a linha da matriz (obs: em todos os casos, a linha tem ter um valor, por isso "and linha")
-                    if conteudo == 3 and linha:
+                    #se escolheu conteudo todo, printo toda a linha da matriz (obs: em todos os casos, coloco "is not False" pois se a funcao encontrar_linha retornar False,
+                    # entao nem entra, e se ela retornar 0 (primeira linha) o "is not False" nao reconhece o 0 como False, mas se fosse "and linha", ele reconheceria, entao estrito
+                    #para que seja EXATAMENTE False, e nao os outros tipos de valores que sao "Falsos" no python
+                    if conteudo == 3 and linha is not False:
                         print(resultado("\nDados Cadastrados:\n", self.matriz[linha]))
                         #atualizo o arquivo de historico
-                        with open(self.historico, "a", encoding="utf-8") as historico:
-                            historico.write(f"\nLinha buscada: {self.matriz[linha]}\nTempo de busca: = {tempo:.2f} segundos\n")
+                        with open(self.historico, "a", encoding="utf-8-sig") as historico:
+                            historico.write(f"\nLinha buscada: {self.matriz[linha]}\nTempo de busca: = {tempo:.6f} segundos\n")
                     #se escolheu apenas nome, id, gasto, entao so printo as colunas 0 (nome), 6(id), 5(gasto)
-                    elif conteudo == 4 and linha:
+                    elif conteudo == 4 and linha is not False:
                         print(resultado("\nCliente: ", self.matriz[linha][0]))
                         print(resultado("ID do Cliente: ", self.matriz[linha][6]))
                         print(resultado("Gasto do Cliente: ", self.matriz[linha][5]))
                         #atualzio o arquivo de historico
-                        with open(self.historico, "a", encoding="utf-8") as historico:
+                        with open(self.historico, "a", encoding="utf-8-sig") as historico:
                             historico.write(f"\n Conteúdo buscado: {self.matriz[linha][0]}, {self.matriz[linha][6]}, {self.matriz[linha][5]}\n"
-                                            f" Tempo de busca: = {tempo:.2f} segundos\n")
-                #se escolher por id, faço examente as mesmas coisas de antes, so que peço o ID ao inves do nome e jogo pra funcao encontrar_linha
+                                            f" Tempo de busca: = {tempo:.6f} segundos\n")
+                #se escolher por id, faco examente as mesmas coisas de antes, so que peco o ID ao inves do nome e jogo pra funcao encontrar_linha
                 elif metodo == 2:
                     cracha = int(input(solicitar("Por favor, digite o ID do cliente: ")))
                     inicio = time.time()
                     linha = self.encontrar_linha(2,cracha)
                     tempo = time.time() - inicio
-                    if conteudo == 3 and linha:
+                    if conteudo == 3 and linha is not False:
                         print(resultado("\nDados Cadastrados:\n", self.matriz[linha]))
-                        with open(self.historico, "a", encoding="utf-8") as historico:
-                            historico.write(f"\nLinha buscada: {self.matriz[linha]}\nTempo de busca: = {tempo:.2f} segundos\n")
-                    elif conteudo == 4 and linha:
+                        with open(self.historico, "a", encoding="utf-8-sig") as historico:
+                            historico.write(f"\nLinha buscada: {self.matriz[linha]}\nTempo de busca: = {tempo:.6f} segundos\n")
+                    elif conteudo == 4 and linha is not False:
                         print(resultado("\nCliente: ", self.matriz[linha][0]))
                         print(resultado("ID do Cliente: ", self.matriz[linha][6]))
                         print(resultado("Gasto do Cliente: ", self.matriz[linha][5]))
-                        with open(self.historico, "a", encoding="utf-8") as historico:
+                        with open(self.historico, "a", encoding="utf-8-sig") as historico:
                             historico.write(f"\n Conteúdo buscado: {self.matriz[linha][0]}, {self.matriz[linha][6]}, {self.matriz[linha][5]}\n"
-                                            f" Tempo de busca: = {tempo:.2f} segundos\n")
+                                            f" Tempo de busca: = {tempo:.6f} segundos\n")
                 break
             #erro que abrange os problemas acima
             except IndexError as problema:
@@ -282,13 +286,13 @@ class Gerenciador_Matriz:
             self.tamanho += 1 #aumento o tamanho da matriz em 1
             tempo = time.time() - inicio
             #escrever o tempo no historico do arquivo
-            with open(self.historico, "a", encoding="utf-8") as historico:
-                historico.write(f"\n Cliente adicionado: {cliente}\n Tempo para adição: {tempo:.2f} segundos\n")
+            with open(self.historico, "a", encoding="utf-8-sig") as historico:
+                historico.write(f"\n Cliente adicionado: {cliente}\n Tempo para adicao: {tempo:.6f} segundos\n")
 #=========================================================================================================#
     def remover_cliente(self):
         while True:
             try:
-                print(f"\n===  Método de Remoção  ===\n{linha_menu(1, "Por Nome")}\n{linha_menu(2, "Por ID")}\n")
+                print(f"\n===  Método de Remocao  ===\n{linha_menu(1, "Por Nome")}\n{linha_menu(2, "Por ID")}\n")
                 #pergunto o metodo de remocao (por nome ou id)
                 metodo = int(input(solicitar("Selecione o método que deseja: ")))
                 if metodo not in [1,2]:
@@ -296,30 +300,30 @@ class Gerenciador_Matriz:
                 #caso escolha por nome, pergunto o nome e jogo pra funcao de encontrar_linha desse nome
                 if metodo == 1:
                     nome = input(solicitar("Por favor, digite o nome: "))
-                    #se nao for um NOME, força o erro
-                    if not nome.isalpha():
+                    #se nao for um NOME, forca o erro
+                    if not ("".join(nome.split())).isalpha():
                         raise IndexError("Digite o nome apenas com letras!")
                     inicio = time.time()
                     linha = self.encontrar_linha(1, nome)
                     tempo = time.time() - inicio
                     #se o nome existir, entao eu deleto (del) a linha da matriz
-                    if linha:
+                    if linha is not False:
                         print(resultado("\nCliente Removido:\n", self.matriz[linha]))
                         #escrever o tempo no historico do arquivo
-                        with open(self.historico, "a", encoding="utf-8") as historico:
-                            historico.write(f"\n Cadastro removido: {self.matriz[linha]}\n Tempo para remoção: {tempo:.2f} segundos\n")
+                        with open(self.historico, "a", encoding="utf-8-sig") as historico:
+                            historico.write(f"\n Cadastro removido: {self.matriz[linha]}\n Tempo para remocao: {tempo:.6f} segundos\n")
                         del(self.matriz[linha])
                         self.tamanho -= 1 #reduzo o tamanho da matriz em 1
-                #caso escolha por id, faço o mesmo que anteriomente, mas jogo o id na funcao de encontrar_linhas
+                #caso escolha por id, faco o mesmo que anteriomente, mas jogo o id na funcao de encontrar_linhas
                 elif metodo == 2:
                     cracha = int(input(solicitar("Por favor, digite o ID do cliente: ")))
                     inicio = time.time()
                     linha = self.encontrar_linha(2, cracha)
                     tempo = time.time() - inicio
-                    if linha:
+                    if linha is not False:
                         print(resultado("\nCliente Removido:\n", self.matriz[linha]))
-                        with open(self.historico, "a", encoding="utf-8") as historico:
-                            historico.write(f"\n Cadastro removido: {linha}\n Tempo para remoção: {tempo:.2f} segundos\n")
+                        with open(self.historico, "a", encoding="utf-8-sig") as historico:
+                            historico.write(f"\n Cadastro removido: {self.matriz[linha]}\n Tempo para remocao: {tempo:.6f} segundos\n")
                         del(self.matriz[linha])
                         self.tamanho -= 1
                 break
@@ -328,6 +332,21 @@ class Gerenciador_Matriz:
             except ValueError:
                 print(erro("Resposta inválda!"))
 #=========================================================================================================#
+
+    def atualizar_arquivo(self):
+        inicio = time.time()
+        with open(self.arquivo, "w", encoding="utf-8-sig", newline='') as arquivo:
+        #escreve o cabecalho
+            arquivo.write(";".join(self.cabecalho)+"\n")
+            #escreve as linhas atuais
+            for linha in range(self.tamanho):
+                linha_atual = self.matriz[linha]
+                linha_formatada_para_csv = ";".join(str(item) for item in linha_atual) + "\n"
+                arquivo.write(linha_formatada_para_csv)
+        tempo = time.time() - inicio
+        with open(self.historico, "a", encoding="utf-8-sig") as historico:
+            historico.write(f"\n === Arquivo '{self.arquivo}' atualizado! === \n Tempo de atualização: {tempo:.6f} segundos\n")
+
     def menu_interativo(self):
         while True:
             print("\n=====   MENU   =====")
@@ -341,7 +360,7 @@ class Gerenciador_Matriz:
             try:
                 #pergnto o que ele quer (nao pode ser maior que 6, nem diferente de inteiro)
                 pergunta = int(input(solicitar("O que deseja fazer? ")))
-                #forço os inputs maiores que 6 para o except
+                #forco os inputs maiores que 6 para o except
                 if pergunta >= 6:
                     raise ValueError
             #uso o except pra ficar voltando pro inicio (com o continue) toda vez que o input vier em formato indesejado
@@ -358,7 +377,7 @@ class Gerenciador_Matriz:
             elif pergunta == 4:
                 self.remover_cliente()
             elif pergunta == 5:
-                # atualizar_matriz()
+                self.atualizar_arquivo()
                 break
 #=========================================================================================================#
 

@@ -8,13 +8,17 @@ from cores import solicitar
 from cores import erro
 from cores import resultado
 
-nomes = ["Lucas", "Ana", "Pedro", "Julia", "Gabriel", "Maria", "Joao", "Larissa", "Felipe", "Camila", 
-        "Rafael", "Beatriz", "Bruno", "Carolina", "Daniel",
-        "Isabela", "Thiago", "Amanda", "Leonardo", "Fernanda"]
+nomes = ["Lucas", "Ana", "Pedro", "Julia", "Gabriel", "Maria", "João", "Larissa", "Felipe", "Camila", 
+         "Rafael", "Beatriz", "Bruno", "Carolina", "Daniel", "Isabela", "Thiago", "Amanda", "Leonardo", "Fernanda",
+         "Mateus", "Letícia", "Gustavo", "Mariana", "André", "Sophia", "Rodrigo", "Vitória", "Diego", "Alice",
+         "Eduardo", "Helena", "Vinicius", "Manuela", "Victor", "Júlia", "Henrique", "Giovanna", "Caio", "Luana",
+         "Marcelo", "Yasmin", "Arthur", "Gabriela", "Fábio", "Nicole", "Otávio", "Melissa", "Renato", "Bianca"]
 sobrenome = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Carvalho", "Ferreira", "Rodrigues", "Almeida",
-    "Costa", "Nascimento", "Araujo", "Barbosa", "Ribeiro", "Martins", "Gomes", "Rocha", "Teixeira", "Moura"]
+             "Costa", "Nascimento", "Araújo", "Barbosa", "Ribeiro", "Martins", "Gomes", "Rocha", "Teixeira", "Moura",
+             "Dias", "Ramos", "Cardoso", "Machado", "Freitas", "Lopes", "Rezende", "Monteiro", "Mendes", "Cavalcanti",
+             "Castro", "Correia", "Pinto", "Farias", "Campos", "Moreira", "Cunha", "Pires", "Andrade", "Melo",
+             "Franco", "Nunes", "Barros", "Duarte", "Vieira", "Coelho", "Miranda", "Azevedo", "Siqueira", "Fonseca"]
 numeros = np.random.choice(115000, size=115000, replace=False)
-
 
 def gerar_dados():
 
